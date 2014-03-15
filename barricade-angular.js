@@ -3,7 +3,7 @@
  * Copyright (C)2014 2Toad, LLC.
  * http://2toad.github.io/Barricade-Angular
  * 
- * Version: 1.0.2
+ * Version: 1.1.0
  * License: MIT
  */
 
@@ -20,12 +20,16 @@ angular.module("barricade", [])
         noAuth: undefined,
         authorized: undefined,
         expired: undefined,
+        lastNoAuth: undefined,
         
         init: function(rememberMe, config) {
             $.extend(this, config);
 
-            $rootScope.$on("$routeChangeStart", function(event, next) {
+            $rootScope.$on("$routeChangeStart", function(event, next, current) {
                 this.noAuth = next.noAuth;
+                this.lastNoAuth = current 
+                    ? current.noAuth ? current.originalPath : this.lastNoAuth
+                    : next.noAuth ? next.originalPath : this.lastNoAuth;
             }.bind(this));
             
             if (rememberMe) {
