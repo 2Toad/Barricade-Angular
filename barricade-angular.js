@@ -15,7 +15,7 @@ angular.module("barricade", [])
         tokenInvalidateUrl: undefined,
         loginTemplateUrl: undefined,
         serverErrorTemplateUrl: undefined,
-		exclusions: [],
+        exclusions: [],
         onError500: undefined,
         onError403: undefined,
         noAuth: undefined,
@@ -25,7 +25,7 @@ angular.module("barricade", [])
         
         init: function(rememberMe, config) {
             $.extend(this, config);
-			this.formatExclusions();
+            this.formatExclusions();
 
             $rootScope.$on("$routeChangeStart", function(event, next, current) {
                 this.noAuth = next.noAuth;
