@@ -82,7 +82,7 @@ angular.module("barricade", [])
             this.expired = status == 420;
         },
         isAuthorized: function() {
-            return this.authorized || this.noAuth;
+            return this.authorized === true || this.noAuth === true;
         }
     };
 }])
