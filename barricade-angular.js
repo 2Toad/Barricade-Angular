@@ -15,6 +15,7 @@ angular.module("barricade", [])
         tokenInvalidateUrl: undefined,
         loginTemplateUrl: undefined,
         serverErrorTemplateUrl: undefined,
+		exclusions: [],
         onError500: undefined,
         onError403: undefined,
         noAuth: undefined,
@@ -24,6 +25,7 @@ angular.module("barricade", [])
         
         init: function(rememberMe, config) {
             $.extend(this, config);
+			this.formatExclusions();
 
             $rootScope.$on("$routeChangeStart", function(event, next, current) {
                 this.noAuth = next.noAuth;
@@ -83,6 +85,18 @@ angular.module("barricade", [])
         },
         isAuthorized: function() {
             return this.authorized === true || this.noAuth === true;
+        },
+        formatExclusions: function() {
+            // Exclude Barricade API URL's
+            this.exclusions.push(this.serverErrorTemplateUrl);
+            this.exclusions.push(this.loginTemplateUrl);
+            this.exclusions.push(this.tokenRequestUrl);
+
+            var formatted = [];
+            angular.forEach(this.exclusions, function(value) {
+                this.push(value.toLowerCase());
+            }, formatted);
+            this.exclusions = formatted;
         }
     };
 }])
@@ -91,10 +105,9 @@ angular.module("barricade", [])
     return {
         request: function(config) {
             // Authorized?
-            if ($rootScope.barricade.isAuthorized()
-                    || config.url == $rootScope.barricade.serverErrorTemplateUrl
-                    || config.url == $rootScope.barricade.loginTemplateUrl
-                    || config.url == $rootScope.barricade.tokenRequestUrl)
+            if ($rootScope.barricade.isAuthorized() 
+                    // Skip excluded URL's
+                    || $rootScope.barricade.exclusions.indexOf(config.url.toLowerCase()) > -1)
                 return config || $q.when(config);
 
             // Not authorized, so flag it for a reload after a successful login()
