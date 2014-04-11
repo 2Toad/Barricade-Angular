@@ -43,7 +43,7 @@
                         if (cookie.expiration < $.now())
                             self.setStatus(420);
                         else {
-                            self.setHeader(cookie.token);
+                            setHeader(cookie.token);
                             self.setStatus(200);
                         }
                     }
@@ -57,7 +57,7 @@
                           ,expiration: $.now() + (data.expires_in * 1000)
                         };
                     
-                        self.setHeader(cookie.token);
+                        setHeader(cookie.token);
                         $cookieStore.put("barricade", cookie);
                     
                         self.setStatus(200);
@@ -79,9 +79,6 @@
                 });
                 return promise;
             },
-            setHeader: function(bearerToken) {
-                $http.defaults.headers.common["Authorization"] = "Bearer " + bearerToken;
-            },
             setStatus: function(status) {           
                 self.authorized = status == 200;
                 self.expired = status == 420;
@@ -102,6 +99,10 @@
                 formatted.push(value.toLowerCase());
             });
             self.exclusions = formatted;
+        }
+
+        function setHeader(bearerToken) {
+            $http.defaults.headers.common["Authorization"] = "Bearer " + bearerToken;
         }
 
         // TODO: We add a reference to $rootScope to get around the dependency recursion that
