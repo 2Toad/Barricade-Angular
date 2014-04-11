@@ -19,8 +19,6 @@
             loginTemplateUrl: undefined,
             serverErrorTemplateUrl: undefined,
             exclusions: [],
-            onError500: undefined,
-            onError403: undefined,
             noAuth: undefined,
             authorized: undefined,
             expired: undefined,
@@ -132,17 +130,8 @@
                 return $q.reject(401);
             },
             responseError: function(rejection) {
-                switch(rejection.status) {
-                    case 401:
-                        $rootScope.barricade.setStatus(401);
-                        break;
-                    case 403:
-                        $rootScope.barricade.onError403(rejection);
-                        break;
-                    case 500:
-                        $rootScope.barricade.onError500(rejection);
-                        break;
-                }
+                if ($rootScope.barricade.serverError) rejection = $rootScope.barricade.serverError(rejection);
+                if (rejection.status === 401) $rootScope.barricade.setStatus(401);
                 return $q.reject(rejection);
             }
         };
