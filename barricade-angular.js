@@ -28,7 +28,7 @@
         
             init: function(rememberMe, config) {
                 $.extend(self, config);
-                self.formatExclusions();
+                formatExclusions();
 
                 $rootScope.$on("$routeChangeStart", function(event, next, current) {
                     self.noAuth = next.noAuth;
@@ -88,20 +88,21 @@
             },
             isAuthorized: function() {
                 return self.authorized === true || self.noAuth === true;
-            },
-            formatExclusions: function() {
-                // Exclude Barricade API URL's
-                self.exclusions.push(self.serverErrorTemplateUrl);
-                self.exclusions.push(self.loginTemplateUrl);
-                self.exclusions.push(self.tokenRequestUrl);
-
-                var formatted = [];
-                angular.forEach(self.exclusions, function(value) {
-                    formatted.push(value.toLowerCase());
-                });
-                self.exclusions = formatted;
             }
         };
+
+        function formatExclusions() {
+            // Exclude Barricade API URL's
+            self.exclusions.push(self.serverErrorTemplateUrl);
+            self.exclusions.push(self.loginTemplateUrl);
+            self.exclusions.push(self.tokenRequestUrl);
+
+            var formatted = [];
+            angular.forEach(self.exclusions, function(value) {
+                formatted.push(value.toLowerCase());
+            });
+            self.exclusions = formatted;
+        }
 
         // TODO: We add a reference to $rootScope to get around the dependency recursion that
         // is caused when trying to inject barricade into the barricade.interceptor service.
