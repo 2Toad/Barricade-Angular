@@ -13,7 +13,7 @@
     angular.module("barricade", [])
 
     .factory("barricade", ["$http", "$cookieStore", "$rootScope", "$location", function($http, $cookieStore, $rootScope, $location) {
-        return $rootScope.barricade = {
+        var self = {
             tokenRequestUrl: undefined,
             tokenInvalidateUrl: undefined,
             loginTemplateUrl: undefined,
@@ -27,81 +27,88 @@
             lastNoAuth: undefined,
         
             init: function(rememberMe, config) {
-                $.extend(this, config);
-                this.formatExclusions();
+                $.extend(self, config);
+                self.formatExclusions();
 
                 $rootScope.$on("$routeChangeStart", function(event, next, current) {
-                    this.noAuth = next.noAuth;
-                    this.lastNoAuth = current 
-                        ? current.noAuth ? current.originalPath : this.lastNoAuth
-                        : next.noAuth ? next.originalPath : this.lastNoAuth;
-                }.bind(this));
+                    self.noAuth = next.noAuth;
+                    self.lastNoAuth = current 
+                        ? current.noAuth ? current.originalPath : self.lastNoAuth
+                        : next.noAuth ? next.originalPath : self.lastNoAuth;
+                });
             
                 if (rememberMe) {
                     var cookie = $cookieStore.get("barricade");
                     if (cookie) {
                         if (cookie.expiration < $.now())
-                            this.setStatus(420);
+                            self.setStatus(420);
                         else {
-                            this.setHeader(cookie.token);
-                            this.setStatus(200);
+                            self.setHeader(cookie.token);
+                            self.setStatus(200);
                         }
                     }
                 }
             },
             login: function(username, password, tokenRequestUrl) {
-                return $http.post(tokenRequestUrl || this.tokenRequestUrl, {"Username": username, "Password": password})
+                return $http.post(tokenRequestUrl || self.tokenRequestUrl, {"Username": username, "Password": password})
                     .success(function(data) {                   
                         var cookie = {
                            token: data.access_token
                           ,expiration: $.now() + (data.expires_in * 1000)
                         };
                     
-                        this.setHeader(cookie.token);
+                        self.setHeader(cookie.token);
                         $cookieStore.put("barricade", cookie);
                     
-                        this.setStatus(200);
+                        self.setStatus(200);
 
-                        if (this.reload) {
+                        if (self.reload) {
                             // TODO: We append a hash to the path so Angular will reload 
                             // the view. This works, but it's kind of hacky.
                             $location.hash($.now());
-                            this.reload = false;
+                            self.reload = false;
                         }
-                    }.bind(this));
+                    });
             },
             logout: function(tokenInvalidateUrl) {
-                var promise = $http.post(tokenInvalidateUrl || this.tokenInvalidateUrl);
+                var promise = $http.post(tokenInvalidateUrl || self.tokenInvalidateUrl);
                 promise.finally(function() {
                     delete $http.defaults.headers.common["Authorization"];
                     $cookieStore.remove("barricade");
-                    this.setStatus(401);
-                }.bind(this));
+                    self.setStatus(401);
+                });
                 return promise;
             },
             setHeader: function(bearerToken) {
                 $http.defaults.headers.common["Authorization"] = "Bearer " + bearerToken;
             },
             setStatus: function(status) {           
-                this.authorized = status == 200;
-                this.expired = status == 420;
+                self.authorized = status == 200;
+                self.expired = status == 420;
             },
             isAuthorized: function() {
-                return this.authorized === true || this.noAuth === true;
+                return self.authorized === true || self.noAuth === true;
             },
             formatExclusions: function() {
                 // Exclude Barricade API URL's
-                this.exclusions.push(this.serverErrorTemplateUrl);
-                this.exclusions.push(this.loginTemplateUrl);
-                this.exclusions.push(this.tokenRequestUrl);
+                self.exclusions.push(self.serverErrorTemplateUrl);
+                self.exclusions.push(self.loginTemplateUrl);
+                self.exclusions.push(self.tokenRequestUrl);
 
                 var formatted = [];
-                angular.forEach(this.exclusions, function(value) {
-                    this.push(value.toLowerCase());
-                }, formatted);
-                this.exclusions = formatted;
+                angular.forEach(self.exclusions, function(value) {
+                    formatted.push(value.toLowerCase());
+                });
+                self.exclusions = formatted;
             }
         };
+
+        // TODO: We add a reference to $rootScope to get around the dependency recursion that
+        // is caused when trying to inject barricade into the barricade.interceptor service.
+        // It's hacky, and it made me throw up in my mouth a little, but it works.
+        $rootScope.barricade = self;
+
+        return self;
     }])
 
     .factory("barricade.interceptor", ["$rootScope", "$q", function($rootScope, $q) {
