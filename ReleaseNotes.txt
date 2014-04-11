@@ -1,3 +1,13 @@
+Release 1.3.0
+====================
+Features
+* Added: serverError(rejection) - a function called when the Angular interceptor receives a rejection error
+
+Breaking Changes
+* Refactor: replaced onError403() with serverError()
+* Refactor: replaced onError500() with serverError()
+
+
 Release 1.2.0
 ====================
 Features
