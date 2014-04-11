@@ -1,0 +1,31 @@
+Release 1.2.0
+====================
+Features
+* Added: exceptions {string[]} - a list of URL's that Barricade will not block
+* Added: wrapping function and enabled strict mode
+* Refactor: removed use of 'this' keyword
+* Refactor: made formatExclusions() private
+* Refactor: removed dependency on jQuery lib
+
+Fixes
+* isAuthorized() - returned undefined instead of false when authorized or noAuth was undefined
+
+Breaking Changes
+* Refactor: made setHeader() private
+
+
+Release 1.1.0
+====================
+Features
+* Added: lastNoAuth {string} - the last path that didn't need authorization
+
+
+Release 1.0.1
+====================
+Fixes
+* Changed bower.json to accept newer versions of dependent Bower libs
+
+
+Release 1.0.0
+====================
+Initial release
