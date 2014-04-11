@@ -40,7 +40,7 @@
                 if (rememberMe) {
                     var cookie = $cookieStore.get("barricade");
                     if (cookie) {
-                        if (cookie.expiration < $.now())
+                        if (cookie.expiration < now())
                             self.setStatus(420);
                         else {
                             setHeader(cookie.token);
@@ -54,7 +54,7 @@
                     .success(function(data) {                   
                         var cookie = {
                            token: data.access_token
-                          ,expiration: $.now() + (data.expires_in * 1000)
+                          ,expiration: now() + (data.expires_in * 1000)
                         };
                     
                         setHeader(cookie.token);
@@ -65,7 +65,7 @@
                         if (self.reload) {
                             // TODO: We append a hash to the path so Angular will reload 
                             // the view. This works, but it's kind of hacky.
-                            $location.hash($.now());
+                            $location.hash(now());
                             self.reload = false;
                         }
                     });
@@ -103,6 +103,10 @@
 
         function setHeader(bearerToken) {
             $http.defaults.headers.common["Authorization"] = "Bearer " + bearerToken;
+        }
+
+        function now() {
+            return (new Date).getTime();
         }
 
         // TODO: We add a reference to $rootScope to get around the dependency recursion that
