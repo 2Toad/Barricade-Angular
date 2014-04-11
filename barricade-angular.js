@@ -27,7 +27,7 @@
             lastNoAuth: undefined,
         
             init: function(rememberMe, config) {
-                $.extend(self, config);
+                angular.extend(self, config);
                 formatExclusions();
 
                 $rootScope.$on("$routeChangeStart", function(event, next, current) {
