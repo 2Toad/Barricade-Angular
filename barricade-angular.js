@@ -7,12 +7,12 @@
  * License: MIT
  */
 
-(function() {
+(function () {
    "use strict";
 
     angular.module("barricade", [])
 
-    .factory("barricade", ["$http", "$cookieStore", "$rootScope", "$location", function($http, $cookieStore, $rootScope, $location) {
+    .factory("barricade", ["$http", "$cookieStore", "$rootScope", "$location", function ($http, $cookieStore, $rootScope, $location) {
         var self = {
             tokenRequestUrl: undefined,
             tokenInvalidateUrl: undefined,
@@ -23,18 +23,21 @@
             authorized: undefined,
             expired: undefined,
             lastNoAuth: undefined,
-        
-            init: function(rememberMe, config) {
+            init: function (rememberMe, config) {
                 angular.extend(self, config);
                 formatExclusions();
 
-                $rootScope.$on("$routeChangeStart", function(event, next, current) {
+                $rootScope.$on("$routeChangeStart", function (event, next, current) {
                     self.noAuth = next.noAuth;
-                    self.lastNoAuth = current 
-                        ? current.noAuth ? current.originalPath : self.lastNoAuth
-                        : next.noAuth ? next.originalPath : self.lastNoAuth;
+                    self.lastNoAuth = current
+                        ? current.noAuth
+                            ? current.originalPath
+                            : self.lastNoAuth
+                        : next.noAuth
+                            ? next.originalPath
+                            : self.lastNoAuth;
                 });
-            
+
                 if (rememberMe) {
                     var cookie = $cookieStore.get("barricade");
                     if (cookie) {
@@ -47,17 +50,17 @@
                     }
                 }
             },
-            login: function(username, password, tokenRequestUrl) {
+            login: function (username, password, tokenRequestUrl) {
                 return $http.post(tokenRequestUrl || self.tokenRequestUrl, {"Username": username, "Password": password})
-                    .success(function(data) {                   
+                    .success(function (data) {
                         var cookie = {
-                           token: data.access_token
-                          ,expiration: now() + (data.expires_in * 1000)
+                            token: data.access_token,
+                            expiration: now() + (data.expires_in * 1000)
                         };
-                    
+
                         setHeader(cookie.token);
                         $cookieStore.put("barricade", cookie);
-                    
+
                         self.setStatus(200);
 
                         if (self.reload) {
@@ -68,20 +71,20 @@
                         }
                     });
             },
-            logout: function(tokenInvalidateUrl) {
+            logout: function (tokenInvalidateUrl) {
                 var promise = $http.delete(tokenInvalidateUrl || self.tokenInvalidateUrl);
-                promise.finally(function() {
-                    delete $http.defaults.headers.common["Authorization"];
+                promise.finally(function () {
+                    delete $http.defaults.headers.common.Authorization;
                     $cookieStore.remove("barricade");
                     self.setStatus(401);
                 });
                 return promise;
             },
-            setStatus: function(status) {           
-                self.authorized = status == 200;
-                self.expired = status == 420;
+            setStatus: function (status) {           
+                self.authorized = status === 200;
+                self.expired = status === 420;
             },
-            isAuthorized: function() {
+            isAuthorized: function () {
                 return self.authorized === true || self.noAuth === true;
             }
         };
@@ -93,18 +96,18 @@
             self.exclusions.push(self.tokenRequestUrl);
 
             var formatted = [];
-            angular.forEach(self.exclusions, function(value) {
+            angular.forEach(self.exclusions, function (value) {
                 formatted.push(value.toLowerCase());
             });
             self.exclusions = formatted;
         }
 
         function setHeader(bearerToken) {
-            $http.defaults.headers.common["Authorization"] = "Bearer " + bearerToken;
+            $http.defaults.headers.common.Authorization = "Bearer " + bearerToken;
         }
 
         function now() {
-            return (new Date).getTime();
+            return (new Date()).getTime();
         }
 
         // TODO: We add a reference to $rootScope to get around the dependency recursion that
@@ -115,11 +118,11 @@
         return self;
     }])
 
-    .factory("barricade.interceptor", ["$rootScope", "$q", function($rootScope, $q) {
+    .factory("barricade.interceptor", ["$rootScope", "$q", function ($rootScope, $q) {
         return {
-            request: function(config) {
+            request: function (config) {
                 // Authorized?
-                if ($rootScope.barricade.isAuthorized() 
+                if ($rootScope.barricade.isAuthorized()
                         // Skip excluded URL's
                         || $rootScope.barricade.exclusions.indexOf(config.url.toLowerCase()) > -1)
                     return config || $q.when(config);
@@ -129,7 +132,7 @@
                 $rootScope.barricade.reload = true;
                 return $q.reject(401);
             },
-            responseError: function(rejection) {
+            responseError: function (rejection) {
                 if ($rootScope.barricade.serverError) rejection = $rootScope.barricade.serverError(rejection);
                 if (rejection.status === 401) $rootScope.barricade.setStatus(401);
                 return $q.reject(rejection);
@@ -137,7 +140,7 @@
         };
     }])
 
-    .config(["$httpProvider", function($httpProvider) {
+    .config(["$httpProvider", function ($httpProvider) {
         $httpProvider.interceptors.push("barricade.interceptor");
     }]);
 })();
