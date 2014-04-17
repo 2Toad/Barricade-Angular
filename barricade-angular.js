@@ -8,7 +8,7 @@
  */
 
 (function () {
-   "use strict";
+    "use strict";
 
     angular.module("barricade", [])
 
@@ -41,9 +41,9 @@
                 if (rememberMe) {
                     var cookie = $cookieStore.get("barricade");
                     if (cookie) {
-                        if (cookie.expiration < now())
+                        if (cookie.expiration < now()) {
                             self.setStatus(420);
-                        else {
+                        } else {
                             setHeader(cookie.token);
                             self.setStatus(200);
                         }
@@ -51,25 +51,27 @@
                 }
             },
             login: function (username, password, tokenRequestUrl) {
-                return $http.post(tokenRequestUrl || self.tokenRequestUrl, {"Username": username, "Password": password})
-                    .success(function (data) {
-                        var cookie = {
-                            token: data.access_token,
-                            expiration: now() + (data.expires_in * 1000)
-                        };
+                return $http.post(
+                    tokenRequestUrl || self.tokenRequestUrl,
+                    {Username: username, Password: password}
+                ).success(function (data) {
+                    var cookie = {
+                        token: data.access_token,
+                        expiration: now() + (data.expires_in * 1000)
+                    };
 
-                        setHeader(cookie.token);
-                        $cookieStore.put("barricade", cookie);
+                    setHeader(cookie.token);
+                    $cookieStore.put("barricade", cookie);
 
-                        self.setStatus(200);
+                    self.setStatus(200);
 
-                        if (self.reload) {
-                            // TODO: We append a hash to the path so Angular will reload 
-                            // the view. This works, but it's kind of hacky.
-                            $location.hash(now());
-                            self.reload = false;
-                        }
-                    });
+                    if (self.reload) {
+                        // TODO: We append a hash to the path so Angular will reload 
+                        // the view. This works, but it's kind of hacky.
+                        $location.hash(now());
+                        self.reload = false;
+                    }
+                });
             },
             logout: function (tokenInvalidateUrl) {
                 var promise = $http.delete(tokenInvalidateUrl || self.tokenInvalidateUrl);
@@ -80,7 +82,7 @@
                 });
                 return promise;
             },
-            setStatus: function (status) {           
+            setStatus: function (status) {
                 self.authorized = status === 200;
                 self.expired = status === 420;
             },
@@ -124,8 +126,9 @@
                 // Authorized?
                 if ($rootScope.barricade.isAuthorized()
                         // Skip excluded URL's
-                        || $rootScope.barricade.exclusions.indexOf(config.url.toLowerCase()) > -1)
+                        || $rootScope.barricade.exclusions.indexOf(config.url.toLowerCase()) > -1) {
                     return config || $q.when(config);
+                }
 
                 // Not authorized, so flag it for a reload after a successful login()
                 // and block this request from going to the server
@@ -133,8 +136,8 @@
                 return $q.reject(401);
             },
             responseError: function (rejection) {
-                if ($rootScope.barricade.serverError) rejection = $rootScope.barricade.serverError(rejection);
-                if (rejection.status === 401) $rootScope.barricade.setStatus(401);
+                if ($rootScope.barricade.serverError) { rejection = $rootScope.barricade.serverError(rejection); }
+                if (rejection.status === 401) { $rootScope.barricade.setStatus(401); }
                 return $q.reject(rejection);
             }
         };
@@ -143,4 +146,4 @@
     .config(["$httpProvider", function ($httpProvider) {
         $httpProvider.interceptors.push("barricade.interceptor");
     }]);
-})();
+}());
