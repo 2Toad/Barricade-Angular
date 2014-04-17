@@ -69,7 +69,7 @@
                     });
             },
             logout: function(tokenInvalidateUrl) {
-                var promise = $http.post(tokenInvalidateUrl || self.tokenInvalidateUrl);
+                var promise = $http.delete(tokenInvalidateUrl || self.tokenInvalidateUrl);
                 promise.finally(function() {
                     delete $http.defaults.headers.common["Authorization"];
                     $cookieStore.remove("barricade");
