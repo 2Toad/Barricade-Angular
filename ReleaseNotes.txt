@@ -4,8 +4,8 @@ Features
 * Added: serverError(rejection) - a function called when the Angular interceptor receives a rejection error
 
 Breaking Changes
-* Refactor: replaced onError403() with serverError()
-* Refactor: replaced onError500() with serverError()
+* Replaced onError403() with serverError()
+* Replaced onError500() with serverError()
 
 
 Release 1.2.0
@@ -14,15 +14,14 @@ Features
 * Added: exceptions {string[]} - a list of URL's that Barricade will not block
 * Added: wrapping function and enabled strict mode
 * Refactor: removed use of 'this' keyword
-* Refactor: made formatExclusions() private
 * Refactor: removed dependency on jQuery lib
 
 Fixes
 * isAuthorized() - returned undefined instead of false when authorized or noAuth was undefined
 
 Breaking Changes
-* Refactor: made setHeader() private
-
+* Made setHeader() private
+* Made formatExclusions() private
 
 Release 1.1.0
 ====================
